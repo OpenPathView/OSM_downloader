@@ -1,0 +1,17 @@
+multithreading pour le dl des tuiles
+mise à jour de la map par event:
+    nouvelles tuiles chargé
+    déplacement de la carte
+dico des tuiles protégé par mutex
+
+
+classes :
+Leaflet
+    Tiles (containeur sécurisé pour les tuiles)
+        Tile (tuile)
+    TileDownloader (gestionaire de téléchargement des tuiles en multithread, pour optimiser le nombre de thread)
+
+Thread : 
+    Thread d'evenements (principal)
+    Thread d'actualisation de la carte(attente d'évenement)
+    Threads de téléchargements
