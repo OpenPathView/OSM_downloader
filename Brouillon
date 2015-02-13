@@ -4,6 +4,7 @@ mise à jour de la map par event:
     déplacement de la carte
 dico des tuiles protégé par mutex
 
+sous forme de process ==> réutilisabilité en sous process pour plus de flexibilité ?
 
 classes :
 Leaflet

@@ -1,9 +1,9 @@
-from . import tools, tile
+from . import tools, tiles
 from urllib.request import urlopen
 from urllib.error import URLError
-import pygame.image
 import os
 from math import floor, ceil
+import pygame
 
 LAT_MAX = 85.0511
 LAT_MIN = -85.0511
@@ -20,13 +20,11 @@ class Pyleaflet:
     a pygame viewer to display osm map
     """
 
-    def __init__(self, surface=None, sourceUrl = "http://c.tile.openstreetmap.org/{z}/{x}/{y}.png",cachePath="./cache/{z}/{x}/{y}.png",lat=48.390834,lon=-4.485556,zoomRange=[0,19]):
+    def __init__(self, surface=None,lat=48.390834,lon=-4.485556,zoomRange=[0,19]):
         """
         init map
         @param
             surface : a pygame surface on wich we will draw, if not given, a new window will be created
-            sourceUrl : a formated url to download tile (ex : http://a.tile.openstreetmap.org/{z}/{x}/{y}.png)
-            cachePath : a formated path to where we store tile
             lat : latitude of the map center
             lon : longitude of the map center
             zoomRange : a liste of two element : [min,max] zoom level of map
@@ -37,23 +35,16 @@ class Pyleaflet:
         else:
             self.surface=pygame.display.set_mode((1024,780), pygame.DOUBLEBUF)
 
-        self.cachePath=cachePath
         self._zoom = 2
         self.__zoomRange = zoomRange
         self.__totalMapWidth  = (2**self._zoom)*TILE_WIDTH
         self.__totalMapHeight  = (2**self._zoom)*TILE_HEIGHT
         
-
-        self.sourceUrl=sourceUrl
         relOffsetX=(lon-LON_MIN)/LON_RANGE
         relOffsetY=1-((lat-LAT_MIN)/LAT_RANGE)
         self.__xPixOffset = relOffsetX * self.__totalMapWidth
         self.__yPixOffset = relOffsetY * self.__totalMapHeight
-        self.__mapTiles = dict()
-        for z in range(zoomRange[0],zoomRange[1]+1):
-            self.__mapTiles[z]=dict()
-
-    # TODO : add event loop to move/zoom/click/etc
+        self.__mapTiles = tiles.Tiles()
 
     def updateDisplay(self):
         """
@@ -73,50 +64,15 @@ class Pyleaflet:
 
         for x in range(x_min_disp,x_max_disp):
             for y in range(y_min_disp,y_max_disp):
-                self.loadTileXY(x,y)
+                #self.__mapTiles.loadTileXY(x,y,self._zoom)
                 xPos = x*TILE_WIDTH+surfWidth/2-self.__xPixOffset
                 yPos = y*TILE_HEIGHT+surfHeight/2-self.__yPixOffset
-                if self.__mapTiles[self._zoom].get((x,y)):
-                    self.__mapTiles[self._zoom][x,y].blit(self.surface,xPos,yPos)
-                else:
-                    self.surface.fill((0,0,0),(xPos,yPos,TILE_WIDTH,TILE_HEIGHT))
-                    #fill a white rect
-            pygame.display.flip()
+                if not self.__mapTiles.blit(self._zoom,x,y,self.surface,xPos,yPos):
+                    self.surface.fill((0,0,0),(xPos,yPos,TILE_WIDTH,TILE_HEIGHT)) #fill a white rect
+        pygame.display.flip()
 
 
         #TODO delete old useless tile
-
-    def loadTileXY(self,x,y,z=None,force=False):
-        """
-        load the tile at x,y coordinate with zoom z
-        """
-        x%=(2**self._zoom)
-        y%=(2**self._zoom)        
-        z = z if z else self._zoom
-        if self.__mapTiles[z].get((x,y)):   #check if we already have the tile
-            if not force:                   #we may want to force the update
-                return
-
-        imgPath = self.cachePath.format(x=x,y=y,z=z)
-        imgDir = os.path.dirname(imgPath)
-
-        if not os.path.exists(imgDir): #check directory structure
-            os.makedirs(imgDir)
-
-        if not os.path.exists(imgPath):    #if we haven't already downloaded the image
-            print("Download z={z},x={x},y={y}".format(z=z,x=x,y=y))
-            try:
-                response = urlopen(self.sourceUrl.format(x=x,y=y,z=z))   #load online file
-                img = response.read()
-            except (URLError) as e:
-                print(e)
-                img = None
-            else:                                           #save loaded image in cache
-                with open(imgPath,"wb") as imgFD:
-                    imgFD.write(img)
-        if os.path.exists(imgPath):
-            pic = pygame.image.load(imgPath)
-            self.__mapTiles[z][x,y]=tile.Tile(x,y,z,pic)
 
     def unloadTileXY(self,x,y,z=None,force=False):
         """

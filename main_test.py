@@ -1,10 +1,13 @@
 from pyleaflet import Pyleaflet
 import pygame
+import os
+
+import os
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 surface=pygame.display.set_mode((1024,780), pygame.DOUBLEBUF)
 pyleaflet = Pyleaflet(surface)
 pyleaflet.updateDisplay()
-
 
 while 1:
 
@@ -12,7 +15,6 @@ while 1:
     if event.type == pygame.QUIT:
         exit()
     elif event.type == pygame.MOUSEMOTION:
-        # print(event.buttons)
         if event.buttons[0]:
             dx,dy = event.rel
             pyleaflet.addX(-dx)
