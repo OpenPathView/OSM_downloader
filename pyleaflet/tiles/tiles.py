@@ -25,8 +25,9 @@ class Tiles(threading.Thread):
         for z in range(ZOOM_MIN,ZOOM_MAX+1):
             self.__tiles[z]=dict()
         self.__tilesLock = threading.Lock()
-        self.__toDownload = queue.Queue()
-        self.__toDownloadLock = threading.Lock()
+        self.__toDownload = set()   #use a set to prevent useless multiple entry
+        # self.__toDownloadLock = threading.Lock()
+        self.__toDownloadCondition = threading.Condition()
         self.start()    #start download thread
 
     def run(self):
@@ -35,11 +36,15 @@ class Tiles(threading.Thread):
         download asked tiles
         """
         while True:
-            x,y,z = self.__toDownload.get() #wait for tile to download
-            if not self.__tiles[z].get((x,y)):
+            self.__toDownloadCondition.acquire()
+            if not self.__toDownload:       #check if there realy is something to download
+                self.__toDownloadCondition.wait()   #wait for something to append            
+            x,y,z = self.__toDownload.pop() #get a tile we want to download
+            print("Remaining :",len(self.__toDownload),file=sys.stderr)
+            self.__toDownloadCondition.release()
+
+            if not self.__tiles[z].get((x,y)):  #check if we don't already have the tile
                 self.__dowloadTileXY(x,y,z)
-            self.__toDownload.task_done()
-            print("Remaining :",self.__toDownload.qsize(),file=sys.stderr)
 
 
     def __dowloadTileXY(self,x,y,zoom):
@@ -51,13 +56,17 @@ class Tiles(threading.Thread):
         y%=nbrTiles
         # print("Download z={z},x={x},y={y}".format(z=zoom,x=x,y=y),file=sys.stderr)
         imgPath = CACHE_PATH.format(x=x,y=y,z=zoom)
+        imgFolder = os.path.dirname(imgPath)
+        if not os.path.isdir(imgFolder):
+            os.makedirs(imgFolder)
         try:
-            response = urlopen(SOURCE_URL.format(x=x,y=y,z=zoom))   #load online file
+            response = urlopen(SOURCE_URL.format(x=x,y=y,z=zoom),timeout=0.5)   #load online file
             img = response.read()
         except (URLError) as e:
             print(e,file=sys.stderr)
-            with self.__toDownloadLock:         #if we fail to download the tile, we want to try
-                self.__toDownload.put((x,y,zoom))
+            with self.__toDownloadCondition:         #if we fail to download the tile, we want to try
+                self.__toDownload.add((x,y,zoom))
+                self.__toDownloadCondition.notify()
         else:                                           #save loaded image in cache
             with open(imgPath,"wb") as imgFD:   #save image
                 imgFD.write(img)
@@ -69,8 +78,9 @@ class Tiles(threading.Thread):
         """
         load the tile at x,y coordinate with given zoom
         """
-        x%=(2**zoom)
-        y%=(2**zoom)
+        nbrTiles = 2**zoom
+        x%=nbrTiles
+        y%=nbrTiles
         with self.__tilesLock:
             if self.__tiles[zoom].get((x,y)):   #check if we already have the tile
                 return
@@ -82,8 +92,9 @@ class Tiles(threading.Thread):
             os.makedirs(imgDir)
 
         if not os.path.exists(imgPath):    #if we haven't already downloaded the image
-            with self.__toDownloadLock:
-                self.__toDownload.put((x,y,zoom))
+            with self.__toDownloadCondition:
+                self.__toDownload.add((x,y,zoom))
+                self.__toDownloadCondition.notify()
         else:
             with self.__tilesLock:
                 pic = pygame.image.load(imgPath)
@@ -107,11 +118,12 @@ class Tiles(threading.Thread):
         """
         blit the selected tile on dest
         """
+        nbrTiles = 2**z
+        x%=nbrTiles
+        y%=nbrTiles
         with self.__tilesLock:
             if self.__tiles[z].get((x,y)):
                 self.__tiles[z].get((x,y)).blit(dest,xPos,yPos)
                 return 1
-            else:
-                with self.__toDownloadLock:
-                    self.__toDownload.put((x,y,z))
-                return 0
+        self.loadTileXY(x,y,z)
+        return 0
