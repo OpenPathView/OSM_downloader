@@ -12,7 +12,7 @@ CACHE_PATH  = "./cache/{z}/{x}/{y}.png"
 SOURCE_URL = "http://c.tile.openstreetmap.org/{z}/{x}/{y}.png"
 ZOOM_MIN = 0
 ZOOM_MAX = 19
-UPDATE_DISPLAY_EVEN = pygame.USEREVENT
+UPDATE_DISPLAY_EVENT = pygame.USEREVENT
 MAX_DL_LEN = 32
 
 class Tiles(threading.Thread):
@@ -74,7 +74,7 @@ class Tiles(threading.Thread):
             self.loadTileFromFile(x,y,zoom,imgPath)
         
         try:
-            evt = pygame.event.Event(UPDATE_DISPLAY_EVEN)
+            evt = pygame.event.Event(UPDATE_DISPLAY_EVENT)
             pygame.event.post(evt)
         except (pygame.error) as e:
             print(e,file=sys.stderr)            

@@ -2,7 +2,8 @@ from . import tools, tiles
 from urllib.request import urlopen
 from urllib.error import URLError
 import os
-from math import floor, ceil
+import math
+from math import floor, ceil, log, tan, cos, radians, pi
 import pygame
 
 LAT_MAX = 85.0511
@@ -40,8 +41,8 @@ class Pyleaflet:
         self.__totalMapWidth  = (2**self._zoom)*TILE_WIDTH
         self.__totalMapHeight  = (2**self._zoom)*TILE_HEIGHT
         
-        relOffsetX=(lon-LON_MIN)/LON_RANGE
-        relOffsetY=1-((lat-LAT_MIN)/LAT_RANGE)
+        relOffsetX, relOffsetY =  tools.deg2rel(lat,lon)
+
         self.__xPixOffset = relOffsetX * self.__totalMapWidth
         self.__yPixOffset = relOffsetY * self.__totalMapHeight
         self.__mapTiles = tiles.Tiles()

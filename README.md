@@ -42,4 +42,4 @@ For the standalone version, run the main_test.py file
 python3 main_test.py
 ```
 
-For a in app use, let me the time to code it ^^
+For a in app use, let me the time to code it first

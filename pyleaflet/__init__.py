@@ -1,4 +1,5 @@
 from .pyleaflet import Pyleaflet
-__all__=["pyleaflet","tile","pygame"]
+from .mainWindow import MainWindow
+__all__=["pyleaflet","tile","mainWindow"]
 
     
