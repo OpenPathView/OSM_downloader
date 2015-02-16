@@ -30,8 +30,7 @@ sudo python3 setup.py install
 ```
 
 For Windows:
-```
 Download the installer on [PyGame WebSite](http://pygame.org/download.shtml) (be carefull to take the installer for python3)
-```
+
 
 ## How to use it ?
