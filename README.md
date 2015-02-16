@@ -30,7 +30,16 @@ sudo python3 setup.py install
 ```
 
 For Windows:
+
 Download the installer on [PyGame WebSite](http://pygame.org/download.shtml) (be carefull to take the installer for python3)
 
 
 ## How to use it ?
+
+For the standalone version, run the main_test.py file
+
+```bash
+python3 main_test.py
+```
+
+For a in app use, let me the time to code it ^^
