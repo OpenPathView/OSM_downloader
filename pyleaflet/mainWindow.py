@@ -3,6 +3,7 @@ import os
 
 # os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
+#MainWindow of any use ???? (four interogation point because I think it's useless ^^)
 class MainWindow():
     """
     define an autonome leaflet window

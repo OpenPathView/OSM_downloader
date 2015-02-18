@@ -1,9 +1,19 @@
 from .pyleaflet import Pyleaflet
-from . import tiles
+from . import tiles, action, event
 import pygame
 import os
-import threading, multiprocessing
+import threading, multiprocessing, queue
 
+class TooManyAction(Exception):
+    """
+    Exception raised when you try to add action in action queue while the queue is full
+    """
+
+    def __init__(self, desc):
+        self.desc = desc
+
+    def __str__(self):
+        return self.desc
 
 class Wrapper (multiprocessing.Process): 
     """
@@ -11,10 +21,53 @@ class Wrapper (multiprocessing.Process):
     """
     def __init__(self,*args,**kwarg):
         """
-        init stuff
+        init the multiprocessing layer
+        @params
+            every parameters we want to pass to Process
         """
+        
+        self.__actionQueue = multiprocessing.Queue(128) #queue to send action to the subprocess
+        self.__eventQueue =  multiprocessing.Queue(128) #queue to receive event from the subprocess
+
         multiprocessing.Process.__init__(self,*args,**kwarg)
         self.daemon = True
+
+    def poolEvent(self):
+        """
+        return an single event, if no event are in queue, return a NOEVENT event
+        """
+        try:
+            retrievedEvent = self.__eventQueue.get_nowait()
+            return retrievedEvent
+        except (queue.Empty) as e:
+            return event.Event()    #NOEVENT event
+
+    def waitEvent(self,timeout=None):
+        """
+        wait for an event, if timeout is given, return NOEVENT event after timeout if no event appear
+        @params
+            timeout : time to wait for an event before a NOEVENT event is returned
+        """
+        try:
+            retrievedEvent = self.__eventQueue.get(timeout=timeout)
+            return retrievedEvent
+        except (queue.Empty) as e:
+            return event.Event()    #NOEVENT event
+
+    def putAction(self,action,timeout=None):
+        """
+        send an action request to the PyLeaflet process
+        the action queue has a max size of 128 actions, trying to add action when queue is full will raise a TooManyAction exception
+        unknown action won't do anything
+        @params
+            action : the action to be sent
+            timeout : an optional timeout, in case the queue is full, wait for timeout before raising a TooManyAction exception
+        """
+        assert type(action) is action.Action
+        try:
+            self.__actionQueue.put(action,timeout=timeout)
+        except (queue.Full) as e:
+            raise TooManyAction("Action queue full")
 
 
     def run(self):
@@ -63,4 +116,10 @@ class Wrapper (multiprocessing.Process):
         """
         a mathode run in a separated thread to receive inter-process communication
         """
-        pass
+        while True:
+            action = self.__actionQueue.get()
+            pass
+
+    # TODO : Add some communication protocole
+    #        Add some action protocole (add marker, add path, move to some point)
+    #        Add some event protocole (key pressed, mouse clique, etc)

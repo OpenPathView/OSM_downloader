@@ -75,20 +75,12 @@ class Pyleaflet:
 
         #TODO delete old useless tile
 
-    def unloadTileXY(self,x,y,z=None,force=False):
+    def unloadTile(self):
         """
         unload unused tile
         """
-        zoom = z if z else self._zoom
-        del(self.__mapTiles[z][x,y])
-
-    def loadTileLatLon(self,lat,lon,z=None):
-        """
-        load the tile at lat,lon coordinate with zoom z
-        """
-        zoom = z if z else self._zoom
-        x,y = tools.deg2num(lat, lon, zoom)
-        return self.loadTileXY(x,y,zoom)
+        # TODO : everything to unload tiles
+        pass
 
     #TODO : add code to convert pixel offset and zoom to lat and lon
     # @property
