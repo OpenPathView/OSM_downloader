@@ -102,19 +102,19 @@ class Wrapper (multiprocessing.Process):
                     pyleaflet.addX(-dx)
                     pyleaflet.addY(-dy)
                     pyleaflet.updateDisplay()
-                self.__addEvent(event.Event(event.MOUSEMOTION, pos=pgEvent.pos, button=pgEvent.buttons, rel=[dx,dy]))
+                self.__addEvent(event.Event(event.MOUSEMOTION, pos=pgEvent.pos, button=pgEvent.buttons, rel=[dx,dy], center=pyleaflet.getCenterCoordinate(),visible=pyleaflet.getDisplayedCoordinate()))
             elif pgEvent.type == pygame.MOUSEBUTTONUP:    #zoom
-                self.__addEvent(event.Event(event.MOUSEBUTTONUP, pos=pgEvent.pos, button=pgEvent.button))
+                self.__addEvent(event.Event(event.MOUSEBUTTONUP, pos=pgEvent.pos, button=pgEvent.button, center=pyleaflet.getCenterCoordinate(),visible=pyleaflet.getDisplayedCoordinate()))
                 if pgEvent.button==4:
                     pyleaflet.zoomIn()
                 elif pgEvent.button==5:
                     pyleaflet.zoomOut()
             elif pgEvent.type == pygame.MOUSEBUTTONDOWN:
-                self.__addEvent(event.Event(event.MOUSEBUTTONDOWN, pos=pgEvent.pos, button=pgEvent.button))
+                self.__addEvent(event.Event(event.MOUSEBUTTONDOWN, pos=pgEvent.pos, button=pgEvent.button, center=pyleaflet.getCenterCoordinate(),visible=pyleaflet.getDisplayedCoordinate()))
             elif pgEvent.type == pygame.KEYDOWN:
-                self.__addEvent(event.Event(event.KEYDOWN, unicode = pgEvent.unicode, key=pgEvent.key, mod=pgEvent.mod))
+                self.__addEvent(event.Event(event.KEYDOWN, unicode = pgEvent.unicode, key=pgEvent.key, mod=pgEvent.mod, center=pyleaflet.getCenterCoordinate(),visible=pyleaflet.getDisplayedCoordinate()))
             elif pgEvent.type == pygame.KEYUP:
-                self.__addEvent(event.Event(event.KEYUP, key=pgEvent.key, mod=pgEvent.mod))
+                self.__addEvent(event.Event(event.KEYUP, key=pgEvent.key, mod=pgEvent.mod, center=pyleaflet.getCenterCoordinate(),visible=pyleaflet.getDisplayedCoordinate()))
             elif pgEvent.type == tiles.UPDATE_DISPLAY_EVENT:    #something append which might want the display to be updated
                 pyleaflet.updateDisplay()
             elif pgEvent.type == pygame.VIDEORESIZE:            #user resized the window

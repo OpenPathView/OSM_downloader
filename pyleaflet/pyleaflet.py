@@ -47,16 +47,46 @@ class Pyleaflet:
         self.__yPixOffset = relOffsetY * self.__totalMapHeight
         self.__mapTiles = tiles.Tiles()
 
+    def getDisplayedCoordinate(self):
+        """
+        return displayed coordinate
+        @return dictionari containing coordiantes
+        """
+        surfWidth, surfHeight = self.surface.get_size()
+
+        relLeft = (self.__xPixOffset-surfWidth)/self.__totalMapWidth
+        relRight = (self.__xPixOffset+surfWidth)/self.__totalMapWidth
+        relTop = (self.__yPixOffset-surfHeight)/self.__totalMapHeight
+        relBottom = (self.__yPixOffset+surfHeight)/self.__totalMapHeight
+
+        latTop, lonLeft = tools.rel2deg(relLeft, relTop)
+        latBottom, lonRight = tools.rel2deg(relRight, relBottom)
+        return {"latTop":latTop,"lonRight":lonRight,"latBottom":latBottom,"lonLeft":lonLeft}
+
+    def getCenterCoordinate(self):
+        """
+        return coordinate of the map's center
+        @return dictionari containing coordiantes
+        """
+
+        surfWidth, surfHeight = self.surface.get_size()
+
+        relX = self.__xPixOffset/self.__totalMapWidth        
+        relY = self.__yPixOffset/self.__totalMapHeight
+
+        lat, lon = tools.rel2deg(relX, relY)
+        return {"lat":lat,"lon":lon}
+
     def updateDisplay(self):
         """
         update display
         """
         surfWidth, surfHeight = self.surface.get_size()
 
-        x_min_pix = self.__xPixOffset-surfWidth
-        x_max_pix = self.__xPixOffset+surfWidth
-        y_min_pix = self.__yPixOffset-surfHeight
-        y_max_pix = self.__yPixOffset+surfHeight
+        x_min_pix = self.__xPixOffset-surfWidth/2     #don't need a /2 ???
+        x_max_pix = self.__xPixOffset+surfWidth/2
+        y_min_pix = self.__yPixOffset-surfHeight/2
+        y_max_pix = self.__yPixOffset+surfHeight/2
 
         x_min_disp = floor(x_min_pix/TILE_WIDTH)
         x_max_disp = ceil(x_max_pix/TILE_WIDTH)
