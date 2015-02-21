@@ -82,23 +82,6 @@ class Pyleaflet:
         # TODO : everything to unload tiles
         pass
 
-    #TODO : add code to convert pixel offset and zoom to lat and lon
-    # @property
-    # def lat(self):
-    #     return self._lat
-    # @lat.setter
-    # def lat(self, value):
-    #     self._lat = value
-    #     self.updateDisplay()
-
-    # @property
-    # def lon(self):
-    #     return self._lon
-    # @lon.setter
-    # def lon(self, value):
-    #     self._lon = value
-    #     self.updateDisplay()
-
     def addX(self,dx):
         """
         move the map of dx

@@ -80,37 +80,59 @@ class Wrapper (multiprocessing.Process):
         pyleaflet.updateDisplay()
 
         pygame.event.set_allowed(None)                                                      #select wich event are allowed
-        pygame.event.set_allowed([pygame.QUIT, pygame.MOUSEMOTION, pygame.MOUSEBUTTONUP, tiles.UPDATE_DISPLAY_EVENT, pygame.VIDEORESIZE])
-
+        pygame.event.set_allowed([pygame.QUIT, pygame.MOUSEMOTION, pygame.MOUSEBUTTONUP, pygame.MOUSEBUTTONDOWN,
+            tiles.UPDATE_DISPLAY_EVENT, pygame.VIDEORESIZE,
+            pygame.KEYDOWN, pygame.KEYUP])
         self.communicationThread = threading.Thread(target=self.__comThread,daemon=True)    #start the communication thread
         self.communicationThread.start()
 
         while 1:
-            event = pygame.event.wait()         #wait for an event, it can be classical pygame event or custom map control event
-            if event.type == pygame.QUIT:
+            pgEvent = pygame.event.wait()         #wait for an event, it can be classical pygame event or custom map control event
+            if pgEvent.type == pygame.QUIT:
+                self.__addEvent(event.Event(event.QUIT))
                 exit()
-            elif event.type == pygame.MOUSEMOTION:  #move the map
-                if event.buttons[0]:
-                    dx,dy = event.rel
-                    for e in pygame.event.get(pygame.MOUSEMOTION):  #we sum all mouse mouvement to prevent excessive display update
-                        if e.buttons[0]:
-                            tdx,tdy = event.rel
-                            dx += tdx
-                            dy += tdy
+            elif pgEvent.type == pygame.MOUSEMOTION:  #move the map
+                dx,dy = pgEvent.rel
+                for e in pygame.event.get(pygame.MOUSEMOTION):  #we sum all mouse mouvement to prevent excessive display update
+                    if e.buttons[0]:
+                        tdx,tdy = pgEvent.rel
+                        dx += tdx
+                        dy += tdy
+                if pgEvent.buttons[0]:
                     pyleaflet.addX(-dx)
                     pyleaflet.addY(-dy)
                     pyleaflet.updateDisplay()
-            elif event.type == pygame.MOUSEBUTTONUP:    #zoom
-                if event.button==4:
+                self.__addEvent(event.Event(event.MOUSEMOTION, pos=pgEvent.pos, button=pgEvent.buttons, rel=[dx,dy]))
+            elif pgEvent.type == pygame.MOUSEBUTTONUP:    #zoom
+                self.__addEvent(event.Event(event.MOUSEBUTTONUP, pos=pgEvent.pos, button=pgEvent.button))
+                if pgEvent.button==4:
                     pyleaflet.zoomIn()
-                elif event.button==5:
+                elif pgEvent.button==5:
                     pyleaflet.zoomOut()
-            elif event.type == tiles.UPDATE_DISPLAY_EVENT:    #something append which might want the display to be updated
+            elif pgEvent.type == pygame.MOUSEBUTTONDOWN:
+                self.__addEvent(event.Event(event.MOUSEBUTTONDOWN, pos=pgEvent.pos, button=pgEvent.button))
+            elif pgEvent.type == pygame.KEYDOWN:
+                self.__addEvent(event.Event(event.KEYDOWN, unicode = pgEvent.unicode, key=pgEvent.key, mod=pgEvent.mod))
+            elif pgEvent.type == pygame.KEYUP:
+                self.__addEvent(event.Event(event.KEYUP, key=pgEvent.key, mod=pgEvent.mod))
+            elif pgEvent.type == tiles.UPDATE_DISPLAY_EVENT:    #something append which might want the display to be updated
                 pyleaflet.updateDisplay()
-            elif event.type == pygame.VIDEORESIZE:            #user resized the window
-                surface=pygame.display.set_mode(event.size, pygame.DOUBLEBUF|pygame.RESIZABLE)
+            elif pgEvent.type == pygame.VIDEORESIZE:            #user resized the window
+                surface=pygame.display.set_mode(pgEvent.size, pygame.DOUBLEBUF|pygame.RESIZABLE)
                 pyleaflet.surface = surface
                 pyleaflet.updateDisplay()
+
+    def __addEvent(self,event):
+        """
+        add an event in the event queue
+        return True if the event is added, False in case of error
+        """
+        try:
+            self.__eventQueue.put(event)
+            return True
+        except (queue.Full) as e:
+            print(e,file=sys.stderr)
+            return False
 
     def __comThread(self):
         """
