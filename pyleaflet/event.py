@@ -7,11 +7,11 @@ MOUSEBUTTONUP   =4
 MOUSEBUTTONDOWN =5
 
 # QUIT             none
-# KEYDOWN          unicode, key, mod
-# KEYUP            key, mod
-# MOUSEMOTION      pos, rel, buttons
-# MOUSEBUTTONUP    pos, button
-# MOUSEBUTTONDOWN  pos, button        
+# KEYDOWN          unicode, key, mod, center, visible
+# KEYUP            key, mod, center, visible
+# MOUSEMOTION      pos, rel, buttons, center, visible
+# MOUSEBUTTONUP    pos, button, center, visible
+# MOUSEBUTTONDOWN  pos, button, center, visible
 
 
 class Event():
