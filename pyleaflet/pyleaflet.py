@@ -54,10 +54,10 @@ class Pyleaflet:
         """
         surfWidth, surfHeight = self.surface.get_size()
 
-        relLeft = (self.__xPixOffset-surfWidth)/self.__totalMapWidth
-        relRight = (self.__xPixOffset+surfWidth)/self.__totalMapWidth
-        relTop = (self.__yPixOffset-surfHeight)/self.__totalMapHeight
-        relBottom = (self.__yPixOffset+surfHeight)/self.__totalMapHeight
+        relLeft = (self.__xPixOffset-surfWidth/2.0)/self.__totalMapWidth
+        relRight = (self.__xPixOffset+surfWidth/2.0)/self.__totalMapWidth
+        relTop = (self.__yPixOffset-surfHeight/2.0)/self.__totalMapHeight
+        relBottom = (self.__yPixOffset+surfHeight/2.0)/self.__totalMapHeight
 
         latTop, lonLeft = tools.rel2deg(relLeft, relTop)
         latBottom, lonRight = tools.rel2deg(relRight, relBottom)

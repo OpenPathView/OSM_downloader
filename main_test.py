@@ -1,9 +1,10 @@
-import os, shutil, time
+import os, shutil, time, socket
 import tkinter
 import tkinter.filedialog as tkfiledialog
 from urllib.request import urlopen
 from urllib.error import URLError
 
+MAX_TILE_DL_ATTEMPT = 5
 
 tkRoot = tkinter.Tk()
 tkRoot.withdraw()
@@ -30,6 +31,7 @@ while 1:
 
                 newPid = os.fork()
                 if newPid==0:
+                    tilesToDownload = list()
                     #here we are in a child process, we download data then quit
                     if not os.path.exists(pathToSave):
                         os.makedirs(pathToSave)
@@ -45,27 +47,45 @@ while 1:
                         
                         for x in range(x_min,x_max+1):
                             for y in range(y_min,y_max+1):
-                                time.sleep(0.5)
                                 nbrTiles = 2**zoom
                                 x%=nbrTiles
                                 y%=nbrTiles
-                                if not os.path.exists(os.path.join(pathToSave,"{z}/{x}/".format(z=zoom,x=x))):
-                                    os.makedirs(os.path.join(pathToSave,"{z}/{x}/".format(z=zoom,x=x)))
-                                imgPath = tiles.CACHE_PATH.format(x=x,y=y,z=zoom)
-                                imgFolder = os.path.dirname(imgPath)
-                                if os.path.isfile(imgPath):
-                                    shutil.copy(imgPath,os.path.join(pathToSave,"{z}/{x}/{y}.png".format(z=zoom,x=x,y=y)))
-                                else:
-                                    try:
-                                        response = urlopen(tiles.SOURCE_URL.format(x=x,y=y,z=zoom),timeout=0.5)   #load online file
-                                        img = response.read()
-                                    except (URLError, socket.timeout) as e:
-                                        print(e,file=sys.stderr)
-                                        print("Error downloading tile \{x,y,z\}=\{{x},{y},{z}\}".format(x=x,y=y,z=zoom))
-                                    else:                                           #save loaded image in cache
-                                        with open(imgPath,"wb") as imgFD:   #save image
-                                            imgFD.write(img)
-                    print("Download done \o/")
+                                tilesToDownload.append({"x":x,"y":y,"z":zoom,"attempt":0})
+                    nbrTileTotal=len(tilesToDownload)
+                    failedTiles = list()
+                    while len(tilesToDownload)>0:
+                        print("Download : {}%".format(int(((nbrTileTotal-len(tilesToDownload))/nbrTileTotal)*100.0)))
+                        tileInfo = tilesToDownload.pop(0)
+                        x,y,zoom = tileInfo["x"], tileInfo["y"], tileInfo["z"]
+
+                        if not os.path.exists(os.path.join(pathToSave,"{z}/{x}/".format(z=zoom,x=x))):
+                            os.makedirs(os.path.join(pathToSave,"{z}/{x}/".format(z=zoom,x=x)))
+                        imgPath = tiles.CACHE_PATH.format(x=x,y=y,z=zoom)
+                        imgFolder = os.path.dirname(imgPath)
+                        dlDest = os.path.join(pathToSave,"{z}/{x}/{y}.png".format(z=zoom,x=x,y=y))
+                        if not os.path.isfile(dlDest):
+                            if os.path.isfile(imgPath):
+                                shutil.copy(imgPath,dlDest)
+                            else:
+                                try:
+                                    response = urlopen(tiles.SOURCE_URL.format(x=x,y=y,z=zoom),timeout=0.5)   #load online file
+                                    img = response.read()
+                                except (URLError, socket.timeout) as e:
+                                    tileInfo["attempt"]+=1
+                                    if tileInfo["attempt"]>=MAX_TILE_DL_ATTEMPT:
+                                        failedTiles.append(tileInfo)
+                                    else:
+                                        tilesToDownload.append(tileInfo)
+                                else:                                           #save loaded image in cache
+                                    with open(dlDest,"wb") as imgFD:   #save image
+                                        imgFD.write(img)
+                                time.sleep(0.5)
+                    if failedTiles:
+                        print("The following tiles coundn't be downloaded :")
+                        for tile in failedTiles:
+                            print("\t {x:%d,y:%d,z:%d"%(tile["x"],tile["y"],tile["z"]))
+                    else:
+                        print("All tiles downloaded successfuly")
                     os._exit(0)
                     
             else:
