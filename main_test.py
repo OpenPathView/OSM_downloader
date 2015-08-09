@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 import os, shutil, time, socket
 import tkinter
 import tkinter.filedialog as tkfiledialog
