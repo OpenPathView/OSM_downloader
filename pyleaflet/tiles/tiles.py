@@ -7,9 +7,10 @@ import socket
 from urllib.request import urlopen
 from urllib.error import URLError
 from . import tile
+from pyleaflet.tools import config
 
 CACHE_PATH  = "./cache/{z}/{x}/{y}.png"
-SOURCE_URL = "http://c.tile.openstreetmap.org/{z}/{x}/{y}.png"
+SOURCE_URL = config["SOURCE_URL"]
 ZOOM_MIN = 0
 ZOOM_MAX = 19
 UPDATE_DISPLAY_EVENT = pygame.USEREVENT
@@ -42,7 +43,7 @@ class Tiles(threading.Thread):
         while True:
             self.__toDownloadCondition.acquire()
             if not self.__toDownload:       #check if there realy is something to download
-                self.__toDownloadCondition.wait()   #wait for something to append            
+                self.__toDownloadCondition.wait()   #wait for something to append
             x,y,z = self.__toDownload.pop() #get a tile we want to download
             self.__toDownloadCondition.release()
 
@@ -72,17 +73,17 @@ class Tiles(threading.Thread):
             with open(imgPath,"wb") as imgFD:   #save image
                 imgFD.write(img)
             self.loadTileFromFile(x,y,zoom,imgPath)
-        
+
         try:
             evt = pygame.event.Event(UPDATE_DISPLAY_EVENT)
             pygame.event.post(evt)
         except (pygame.error) as e:
-            print(e,file=sys.stderr)            
+            print(e,file=sys.stderr)
 
     def loadTileFromFile(self,x,y,zoom,imgPath):
         """
         load a Tile from a file
-        @return:   
+        @return:
             1 if succes
             0 if fail
         """
@@ -110,7 +111,7 @@ class Tiles(threading.Thread):
     def loadTileXY(self,x,y,zoom):
         """
         load the tile at x,y coordinate with given zoom
-        @return:   
+        @return:
             1 if succes
             0 if fail
         """
@@ -140,7 +141,7 @@ class Tiles(threading.Thread):
     def loadTileLatLon(self,lat,lon,zoom):
         """
         load the tile at lat,lon coordinate with given zoom
-        @return:   
+        @return:
             1 if succes
             0 if fail
         """

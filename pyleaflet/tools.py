@@ -1,5 +1,6 @@
 import math
 from math import radians, log, tan, cos, pi, atan, sinh, degrees
+import json
 
 
 def deg2num(lat_deg, lon_deg, zoom):
@@ -39,3 +40,9 @@ def rel2deg(xrel, yrel):
     lat_rad = atan(sinh(pi * (1 - 2 * yrel)))
     lat_deg = degrees(lat_rad)
     return (lat_deg, lon_deg)
+
+def config():
+    with open('config/main.json') as f:
+        c = json.load(f)
+    return c
+config = config()
