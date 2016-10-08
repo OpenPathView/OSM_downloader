@@ -1,3 +1,6 @@
 {
-    "SOURCE_URL": "http://c.tile.openstreetmap.org/{z}/{x}/{y}.png"
+    "SOURCE_URL": "http://c.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    "ZOOM_MIN": 0,
+    "ZOOM_MAX": 19,
+    "CACHE_PATH": "./cache/{z}/{x}/{y}.png"
 }

@@ -9,10 +9,10 @@ from urllib.error import URLError
 from . import tile
 from pyleaflet.tools import config
 
-CACHE_PATH  = "./cache/{z}/{x}/{y}.png"
+CACHE_PATH  = config["CACHE_PATH"]
 SOURCE_URL = config["SOURCE_URL"]
-ZOOM_MIN = 0
-ZOOM_MAX = 19
+ZOOM_MIN = config["ZOOM_MIN"]
+ZOOM_MAX = config["ZOOM_MAX"]
 UPDATE_DISPLAY_EVENT = pygame.USEREVENT
 MAX_DL_LEN = 32
 
