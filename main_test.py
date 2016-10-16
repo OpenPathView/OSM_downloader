@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 import os, shutil, time, socket
 import tkinter
 import tkinter.filedialog as tkfiledialog
@@ -45,7 +45,7 @@ while 1:
                     for zoom in range(tiles.ZOOM_MIN,tiles.ZOOM_MAX+1):
                         x_min, y_min = tools.deg2num(latTop,lonLeft,zoom)
                         x_max, y_max = tools.deg2num(latBottom,lonRight,zoom)
-                        
+
                         for x in range(x_min,x_max+1):
                             for y in range(y_min,y_max+1):
                                 nbrTiles = 2**zoom
@@ -88,8 +88,8 @@ while 1:
                     else:
                         print("All tiles downloaded successfuly")
                     os._exit(0)
-                    
+
             else:
                 print("Download cancelled")
-            
-            
+
+
